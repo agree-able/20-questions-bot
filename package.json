@@ -1,0 +1,17 @@
+{
+  "name": "breakout-room-bot",
+  "version": "1.0.0",
+  "description": "Play 20 questions",
+  "main": "index.mjs",
+  "type": "module",
+  "scripts": {
+    "test": "node --env-file=.env test.mjs",
+    "start": "node --env-file=.env index.mjs"
+  },
+  "author": "Derryk Boyd",
+  "license": "ISC",
+  "dependencies": {
+    "breakout-room": "^2.0.0",
+    "openai": "^4.72.0"
+  }
+}
