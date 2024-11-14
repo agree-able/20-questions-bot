@@ -171,10 +171,10 @@ const spawnRoom = () => {
   rooms[currentRoom.getRoomInfo().roomId] = currentRoom
   playGame(currentRoom)
   currentRoom.on("roomClosed", () => {
+    delete rooms[currentRoom.getRoomInfo().roomId]
     if (closingDown) return 
-    // always have a room to join
-    if (Object.keys(rooms).length > 0) return
-    setTimeout(() => spawnRoom, 1000)
+    if (Object.keys(rooms).length > 0) 
+    setTimeout(spawnRoom, 1000)
   })
 }
 
