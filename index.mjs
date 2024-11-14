@@ -97,7 +97,7 @@ async function playGame(room) {
   ];
 
   room.on("peerEntered", async (key) => {
-    console.log("peer entered the room", key);
+    roomPrint(room, `Peer entered the room: ${key}`);
     peerKey = key;
     await room.message(
       `Welcome to 20 Questions! I've thought of an object. Ask me yes/no questions to guess what it is.\nYou have ${questionsLeft} questions left.`
@@ -105,7 +105,7 @@ async function playGame(room) {
   });
 
   room.on("peerLeft", (key) => {
-    console.log("peer left the room", key);
+    roomPrint(room, `Peer left the room: ${key}`);
     gameOver();
   });
 
@@ -147,7 +147,7 @@ async function playGame(room) {
   }
 
   async function gameOver() {
-    console.log(`Game Over! The object was: ${object}`);
+    roomPrint(room, `Game Over! The object was: ${object}`);
     // const transcript = await room.getTranscript();
     // console.log("transcript:", transcript);
     await exitRoom();
