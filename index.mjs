@@ -173,7 +173,7 @@ const spawnRoom = () => {
   currentRoom.on("roomClosed", () => {
     delete rooms[currentRoom.getRoomInfo().roomId]
     if (closingDown) return 
-    if (Object.keys(rooms).length > 0) 
+    if (Object.keys(rooms).length > 0) return
     setTimeout(spawnRoom, 1000)
   })
 }
