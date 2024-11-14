@@ -1,4 +1,4 @@
-import { BreakoutRoom } from "breakout-room";
+import { BreakoutRoom, RoomManager } from "breakout-room";
 import OpenAI from "openai";
 
 const openai = new OpenAI();
@@ -71,8 +71,7 @@ async function getResponse(messages) {
   return response.choices[0].message.content;
 }
 
-async function playGame() {
-  const room = new BreakoutRoom();
+async function playGame(room) {
   const invite = await room.ready();
   let peerKey = "";
 
@@ -106,19 +105,9 @@ async function playGame() {
     shutdown();
   });
 
-  let isGenerating = false;
 
   room.on("message", async (message) => {
-    // shouldn't need to do this but getting duplicate messages for some reason...
-    if (isGenerating) {
-      console.log("Ignoring message while generating response...");
-      return;
-    }
-
-    if (message.who !== peerKey) {
-      console.log("Ignoring message not from peer...");
-      return;
-    }
+    console.log('got a message', message)
 
     const question = message.data;
     questionsLeft--;
@@ -139,9 +128,7 @@ async function playGame() {
     }
 
     messages.push({ role: "user", content: question });
-    isGenerating = true;
     const answer = await getResponse(messages);
-    isGenerating = false;
     messages.push({ role: "assistant", content: answer });
     messages.push({ role: "system", content: `User has ${questionsLeft} questions left.` });
 
@@ -162,11 +149,33 @@ async function playGame() {
     const transcript = await room.getTranscript();
     console.log("transcript:", transcript);
     await exitRoom();
-    process.exit(0);
   }
-
-  process.on("SIGINT", exitRoom);
-  process.on("SIGTERM", exitRoom);
 }
 
-playGame();
+const roomManager = new RoomManager()
+let closingDown = false
+const cleanup = async () => {
+  closingDown = true
+  console.log('clean up all rooms')
+  await roomManager.cleanup()
+  console.log('cleaned up all rooms')
+  process.exit(0)
+}
+process.on("SIGINT", cleanup)
+process.on("SIGTERM", cleanup)
+
+const spawnRoom = () => {
+  let currentRoom = roomManager.createRoom()
+  playGame(currentRoom)
+  currentRoom.on("roomClosed", () => {
+    console.log('room closed')
+    if (!closingDown) return 
+    setTimeout(() => {
+      console.log('spawning new room')
+      spawnRoom()
+    }, 1000)
+  })
+}
+
+spawnRoom()
+
