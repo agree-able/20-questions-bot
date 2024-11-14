@@ -58,12 +58,10 @@ async function generateObject() {
   ];
 
   const word = words[Math.floor(Math.random() * words.length)];
-  console.log("Generated object:", word);
   return word;
 }
 
 async function getResponse(messages) {
-  console.log("Generating answer...");
   const response = await openai.chat.completions.create({
     model: "gpt-4o",
     messages,
@@ -83,6 +81,7 @@ async function playGame(room) {
 
   let questionsLeft = 20;
   const object = await generateObject();
+  roomPrint(room, `Generated object: ${object}`);
   /** @type {import("openai/resources").ChatCompletionCreateParamsNonStreaming["messages"]} */
   const messages = [
     {
@@ -112,6 +111,7 @@ async function playGame(room) {
 
   room.on("message", async (message) => {
     const question = message.data;
+    roomPrint(room, `User asked: ${question}`);
     questionsLeft--;
 
     if (questionsLeft <= 0) {
