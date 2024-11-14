@@ -71,11 +71,15 @@ async function getResponse(messages) {
   return response.choices[0].message.content;
 }
 
+function roomPrint(room, message) {
+  console.log(`${room.getRoomInfo().roomId}: ${message}`);
+}
+
 async function playGame(room) {
   const invite = await room.ready();
   let peerKey = "";
 
-  console.log("Invite your friend to play 20 Questions with you: ", invite);
+  roomPrint(room, `Invite your friend to play 20 Questions with you:  ${invite}`);
 
   let questionsLeft = 20;
   const object = await generateObject();
@@ -92,39 +96,37 @@ async function playGame(room) {
     },
   ];
 
-  room.on("peerEntered", (key) => {
+  room.on("peerEntered", async (key) => {
     console.log("peer entered the room", key);
     peerKey = key;
-    room.message(
+    await room.message(
       `Welcome to 20 Questions! I've thought of an object. Ask me yes/no questions to guess what it is.\nYou have ${questionsLeft} questions left.`
     );
   });
 
   room.on("peerLeft", (key) => {
     console.log("peer left the room", key);
-    shutdown();
+    gameOver();
   });
 
 
   room.on("message", async (message) => {
-    console.log('got a message', message)
-
     const question = message.data;
     questionsLeft--;
 
     if (questionsLeft <= 0) {
       await room.message("You've used all your questions. The object was: " + object);
-      await shutdown();
+      return await gameOver();
     }
 
     if (question.toLowerCase() === "quit") {
       await room.message("You quit the game. The object was: " + object);
-      await shutdown();
+      return await gameOver();
     }
 
     if (question.toLowerCase().includes(object.toLowerCase())) {
-      room.message("You guessed the object! It was: " + object);
-      await shutdown();
+      await room.message("You guessed the object! It was: " + object);
+      return await gameOver();
     }
 
     messages.push({ role: "user", content: question });
@@ -133,21 +135,21 @@ async function playGame(room) {
     messages.push({ role: "system", content: `User has ${questionsLeft} questions left.` });
 
     if (answer.toLowerCase().includes(object.toLowerCase())) {
-      room.message(`The object has been revealed!`);
-      await shutdown();
+      await room.message(`The object has been revealed!`);
+      return await gameOver();
     }
 
-    await room.message(answer);
+    return await room.message(answer);
   });
 
   async function exitRoom() {
     await room.exit();
   }
 
-  async function shutdown() {
+  async function gameOver() {
     console.log(`Game Over! The object was: ${object}`);
-    const transcript = await room.getTranscript();
-    console.log("transcript:", transcript);
+    // const transcript = await room.getTranscript();
+    // console.log("transcript:", transcript);
     await exitRoom();
   }
 }
@@ -156,24 +158,23 @@ const roomManager = new RoomManager()
 let closingDown = false
 const cleanup = async () => {
   closingDown = true
-  console.log('clean up all rooms')
   await roomManager.cleanup()
-  console.log('cleaned up all rooms')
   process.exit(0)
 }
 process.on("SIGINT", cleanup)
 process.on("SIGTERM", cleanup)
 
+const rooms = {}
+
 const spawnRoom = () => {
   let currentRoom = roomManager.createRoom()
+  rooms[currentRoom.getRoomInfo().roomId] = currentRoom
   playGame(currentRoom)
   currentRoom.on("roomClosed", () => {
-    console.log('room closed')
-    if (!closingDown) return 
-    setTimeout(() => {
-      console.log('spawning new room')
-      spawnRoom()
-    }, 1000)
+    if (closingDown) return 
+    // always have a room to join
+    if (Object.keys(rooms).length > 0) return
+    setTimeout(() => spawnRoom, 1000)
   })
 }
 
