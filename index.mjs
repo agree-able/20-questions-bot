@@ -155,28 +155,8 @@ async function playGame(room) {
 }
 
 const roomManager = new RoomManager()
-let closingDown = false
-const cleanup = async () => {
-  closingDown = true
-  await roomManager.cleanup()
-  process.exit(0)
-}
-process.on("SIGINT", cleanup)
-process.on("SIGTERM", cleanup)
+roomManager.installSIGHandlers() // handle shutdown signals
+roomManager.on("lastRoomClosed", () => playGame(roomManager.createRoom()))
+playGame(roomManager.createRoom())
 
-const rooms = {}
-
-const spawnRoom = () => {
-  let currentRoom = roomManager.createRoom()
-  rooms[currentRoom.getRoomInfo().roomId] = currentRoom
-  playGame(currentRoom)
-  currentRoom.on("roomClosed", () => {
-    delete rooms[currentRoom.getRoomInfo().roomId]
-    if (closingDown) return 
-    if (Object.keys(rooms).length > 0) return
-    setTimeout(spawnRoom, 1000)
-  })
-}
-
-spawnRoom()
 
