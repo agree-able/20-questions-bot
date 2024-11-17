@@ -11,6 +11,7 @@
   "author": "Derryk Boyd",
   "license": "ISC",
   "dependencies": {
+    "b4a": "^1.6.7",
     "breakout-room": "^3.3.0",
     "openai": "^4.72.0"
   }

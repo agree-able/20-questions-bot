@@ -1,5 +1,6 @@
 import { BreakoutRoom, RoomManager } from "breakout-room";
 import OpenAI from "openai";
+import b4a from "b4a";
 
 const openai = new OpenAI();
 
@@ -74,11 +75,8 @@ function roomPrint(room, message) {
 }
 
 async function playGame(room) {
-  const invite = await room.ready();
+  roomPrint(room, `Invite your friend to play 20 Questions with you:  ${room.getRoomInfo().invite}`);
   let peerKey = "";
-
-  roomPrint(room, `Invite your friend to play 20 Questions with you:  ${invite}`);
-
   let questionsLeft = 20;
   const object = await generateObject();
   roomPrint(room, `Generated object: ${object}`);
@@ -154,9 +152,14 @@ async function playGame(room) {
   }
 }
 
-const roomManager = new RoomManager()
-roomManager.installSIGHandlers() // handle shutdown signals
-roomManager.on("lastRoomClosed", () => playGame(roomManager.createRoom()))
-playGame(roomManager.createRoom())
+async function run () {
+  const roomManager = new RoomManager()
+  roomManager.installSIGHandlers() // handle shutdown signals
+  const { keyPair } = await roomManager.startAgreeable() 
+  console.log(`Agreeable api:`, b4a.toString(keyPair.publicKey, 'hex'))
+  roomManager.on('readyRoom', (room) => playGame(room))
+  roomManager.on("lastRoomClosed", () => roomManager.createReadyRoom())
+  roomManager.createReadyRoom()
+}
 
-
+run()
