@@ -75,7 +75,7 @@ function roomPrint(room, message) {
 }
 
 async function playGame(room) {
-  roomPrint(room, `Invite your friend to play 20 Questions with you:  ${room.getRoomInfo().invite}`);
+  roomPrint(room, `Room invite: ${room.getRoomInfo().invite}`);
   let peerKey = "";
   let questionsLeft = 20;
   const object = await generateObject();
@@ -153,10 +153,12 @@ async function playGame(room) {
 }
 
 async function run () {
+  const seed = process.argv[2]
+  console.log('seed', seed)
   const roomManager = new RoomManager()
   roomManager.installSIGHandlers() // handle shutdown signals
-  const { keyPair } = await roomManager.startAgreeable() 
-  console.log(`Agreeable api:`, b4a.toString(keyPair.publicKey, 'hex'))
+  const { agreeableKey } = await roomManager.startAgreeable(seed) 
+  console.log(`Agreeable api:`, agreeableKey)
   roomManager.on('readyRoom', (room) => playGame(room))
   roomManager.on("lastRoomClosed", () => roomManager.createReadyRoom())
   roomManager.createReadyRoom()
