@@ -129,6 +129,9 @@ async function playGame(room) {
     },
   ];
 
+  // IMPORTANT: This event listener handles new participants joining the room
+  // It's crucial for initializing the game state for new players
+  // The 'peerEntered' event provides the peer's unique key as an argument
   room.on("peerEntered", async (key) => {
     roomPrint(room, `Peer entered the room: ${key}`);
     peerKey = key;
@@ -137,12 +140,17 @@ async function playGame(room) {
     );
   });
 
+  // IMPORTANT: This event listener handles participants leaving the room
+  // Critical for cleanup and game state management
+  // The 'peerLeft' event provides the leaving peer's key
   room.on("peerLeft", (key) => {
     roomPrint(room, `Peer left the room: ${key}`);
     gameOver();
   });
 
-
+  // IMPORTANT: Core game logic - handles all incoming messages
+  // This is where the main interaction between peers happens
+  // The 'message' event provides the complete message object with data
   room.on("message", async (message) => {
     const question = message.data;
     roomPrint(room, `User asked: ${question}`);
