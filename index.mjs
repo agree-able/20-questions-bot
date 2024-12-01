@@ -1,6 +1,6 @@
-import { BreakoutRoom, RoomManager } from "breakout-room";
+import { RoomManager } from "@agree-able/room";
 import OpenAI from "openai";
-import b4a from "b4a";
+import rc from 'run-con'
 
 const openai = new OpenAI();
 
@@ -153,12 +153,21 @@ async function playGame(room) {
 }
 
 async function run () {
-  const seed = process.argv[2]
-  console.log('seed', seed)
+  const config = rc('breakout-room', {})
   const roomManager = new RoomManager()
   roomManager.installSIGHandlers() // handle shutdown signals
-  const { agreeableKey } = await roomManager.startAgreeable(seed) 
-  console.log(`Agreeable api:`, agreeableKey)
+
+  const expectations = {
+    reason: 'We are playing a game of 20 questions. The user is trying to guess an object. The assistant will provide hints and the user will ask yes/no questions to guess the object. The game ends when the user guesses the object or runs out of questions.',
+    rules: 'The user can ask yes/no questions to guess the object. The user has 20 questions to guess the object. The user can quit the game at any time by typing "quit". If the user guesses the object, the game ends. If the user runs out of questions, the game ends and the object is revealed.',
+    whoamiRequired: config.whoamiRequired || false
+  }
+  const validateParticipant = (acceptance, extraInfo) => {
+    console.log('asked to validate', acceptance, extraInfo)
+    return { ok: true }
+  }
+  const { agreeableKey } = await roomManager.startAgreeable(config, expectations, validateParticipant) 
+  console.log(`agreeableKey:`, agreeableKey)
   roomManager.on('readyRoom', (room) => playGame(room))
   roomManager.on("lastRoomClosed", () => roomManager.createReadyRoom())
   roomManager.createReadyRoom()
