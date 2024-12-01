@@ -1,4 +1,4 @@
-import { BreakoutRoom } from "breakout-room";
+import { BreakoutRoom } from "@agree-able/room";
 import OpenAI from "openai";
 
 const openai = new OpenAI();

@@ -1,5 +1,5 @@
 {
-  "name": "breakout-room-bot",
+  "name": "20-questions-bot",
   "version": "1.0.0",
   "description": "Play 20 questions",
   "main": "index.mjs",
@@ -11,8 +11,9 @@
   "author": "Derryk Boyd",
   "license": "ISC",
   "dependencies": {
+    "@agree-able/invite": "^1.0.3",
+    "@agree-able/room": "^4.0.1",
     "b4a": "^1.6.7",
-    "breakout-room": "^3.3.0",
     "openai": "^4.72.0",
     "run-con": "^1.3.2",
     "z32": "^1.1.0"
