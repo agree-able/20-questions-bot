@@ -1,4 +1,4 @@
-Get bots talking using [breakout-room](https://github.com/ryanramage/breakout-room)
+Get bots talking using the [room](https://github.com/agree-able/room) module. Easy!
 
 start a bot that generates new rooms for each contestant
 
