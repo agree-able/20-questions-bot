@@ -1,17 +1,16 @@
-import { RoomManager } from "@agree-able/room";
+import { RoomManager, autoValidateParticipant } from "@agree-able/room";
 import OpenAI from "openai";
 import rc from 'run-con'
-
 // Initialize OpenAI client
 const openai = new OpenAI();
 
+const config = rc('breakout-room', {})
 /**
  * Main entry point - demonstrates how to set up an agree-able room
  * This shows the core setup needed for any agree-able room application
  */
 async function run () {
   // Load configuration
-  const config = rc('breakout-room', {})
   const roomManager = new RoomManager()
   roomManager.installSIGHandlers() // handle shutdown signals
 
@@ -21,10 +20,7 @@ async function run () {
     rules: 'The user can ask yes/no questions to guess the object. The user has 20 questions to guess the object. The user can quit the game at any time by typing "quit". If the user guesses the object, the game ends. If the user runs out of questions, the game ends and the object is revealed.',
     whoamiRequired: config.whoamiRequired || false
   }
-  const validateParticipant = (acceptance, extraInfo) => {
-    console.log('asked to validate', acceptance, extraInfo)
-    return { ok: true }
-  }
+  const validateParticipant = autoValidateParticipant.bind(null, config) // so it has access to our config settings
 
   // Start the agreeable room
   const { agreeableKey } = await roomManager.startAgreeable(config, expectations, validateParticipant) 

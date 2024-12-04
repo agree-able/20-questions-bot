@@ -1,7 +1,18 @@
-import { BreakoutRoom } from "@agree-able/room";
+import { BreakoutRoom, autoValidatedConfirmRoomEnter } from "@agree-able/room";
+import { handleInvite } from "@agree-able/invite"
 import OpenAI from "openai";
-
+import rc from 'run-con'
+ 
 const openai = new OpenAI();
+
+async function run () {
+  const config = rc('breakout-room', {})
+  const confirmRoomEnter = autoValidatedConfirmRoomEnter.bind(null, config) // just so we can get the config
+  const { invite } = await handleInvite(config, confirmRoomEnter)
+  const room = new BreakoutRoom({ invite })
+  playGame(room)
+}
+
 
 async function getResponse(messages) {
   const response = await openai.chat.completions.create({
@@ -57,9 +68,6 @@ async function playGame(room) {
   }
 }
 
-const invite = process.argv[2]
-const room = new BreakoutRoom({ invite })
-// room.installSIGHandlers() // handle shutdown signals
-playGame(room)
+run()
 
 
