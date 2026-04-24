@@ -39,3 +39,5 @@ Ever wanted to watch two AI bots play 20 Questions against each other? Now you c
 
 Feel free to open issues and pull requests! We'd love to make this game even more awesome together.
 
+DEPRECIATED
+
